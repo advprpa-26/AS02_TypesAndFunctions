@@ -40,7 +40,8 @@ riddleB = todo
 
 -- Implement the function `myLength`. It returns the length of a list:
 myLength :: [a] -> Int
-myLength = todo
+myLength (_ : l) = 1 + myLength l 
+myLength [] = 0
 
 myLengthSpec :: Spec
 myLengthSpec =
@@ -51,7 +52,8 @@ myLengthSpec =
 
 -- Implement the function myReverse. It reverses a list:
 myReverse :: [a] -> [a]
-myReverse = todo
+myReverse [] = []
+myReverse (f : l) =  myReverse l ++ [f] 
 
 myReverseSpec :: Spec
 myReverseSpec =
@@ -63,7 +65,10 @@ myReverseSpec =
 -- Implement the function drop. It drops the first n elements.
 -- It returns the list unchanged for negative n.
 myDrop :: Int -> [a] -> [a]
-myDrop = todo
+myDrop 0 l = l 
+myDrop _ [] = []
+myDrop n (f : l) = if n < 0 then [f]++l else myDrop (n-1) l 
+
 
 myDropSpec :: Spec
 myDropSpec =
@@ -100,7 +105,8 @@ exTree =
 
 -- Implement the function preorder. It traverses a binary tree pre-order:
 preorder :: Bin a -> [a]
-preorder = todo
+preorder (Leaf a) = [a]
+preorder (Fork a c b) = [c] ++ preorder a ++ preorder b 
 
 preorderSpec :: Spec
 preorderSpec =
@@ -111,7 +117,8 @@ preorderSpec =
 
 -- Implement the function inorder. It traverses a binary tree in-order:
 inorder :: Bin a -> [a]
-inorder = todo
+inorder (Leaf a) = [a]
+inorder (Fork a c b) = inorder a ++ [c] ++ inorder b
 
 inorderSpec :: Spec
 inorderSpec =
@@ -122,7 +129,8 @@ inorderSpec =
 
 -- Implement the function postorder. It traverses a binary tree post-order:
 postorder :: Bin a -> [a]
-postorder = todo
+postorder (Leaf a) = [a]
+postorder (Fork a c b) = postorder a ++ postorder b ++ [c] 
 
 postorderSpec :: Spec
 postorderSpec =
@@ -154,7 +162,10 @@ shorten (n :/: d) = (n `div` f) :/: (d `div` f)
 -- Hint: DIV can easy be implemented by MUL with the reciprocal
 evalOp :: Op -> Rat -> Rat -> Rat
 evalOp ADD (ln :/: ld) (rn :/: rd) = shorten (((ln * rd) + (rn * ld)) :/: (ld * rd))
-evalOp _ _ _ = todo
+evalOp MUL (ln :/: ld) (rn :/: rd) = shorten ((ln*rn) :/: (ld*rd))
+evalOp DIV (ln :/: ld) (rn :/: rd) = evalOp MUL (ln :/: ld) (rd :/: rn)
+evalOp SUB (ln :/: ld) (rn :/: rd) = shorten (((ln * rd) - (rn * ld)) :/: (ld * rd))
+
 
 evalOpSpec :: Spec
 evalOpSpec =
@@ -166,7 +177,12 @@ evalOpSpec =
 
 -- Now implement the `eval` function, which evaluates an expression:
 eval :: Expr -> Rat
-eval = todo
+eval (Val a) = shorten (a)
+eval (Bin ADD a b) = shorten (evalOp ADD (eval a) (eval b))
+eval (Bin SUB a b) = shorten (evalOp SUB (eval a) (eval b))
+eval (Bin MUL a b) = shorten (evalOp MUL (eval a) (eval b))
+eval (Bin DIV a b) = shorten (evalOp DIV (eval a) (eval b))
+
 
 -- Example expression:
 -- ((1/2) + (1/4)) * ((1/6) / (2/1))
@@ -191,7 +207,7 @@ evalSpec =
     it "eval (Val (1:/:2)) == (1:/:2)" $ eval (Val (1 :/: 2)) `shouldBe` (1 :/: 2)
     it "eval e == (1:/:16)" $ eval e `shouldBe` (1 :/: 16)
 
--------------------------------------------------------------------------------
+-----------------------------b A--------------------------------------------------
 -- 3. Higher order functions on lists
 -------------------------------------------------------------------------------
 
@@ -211,7 +227,8 @@ languages =
 -- Implement your own version of the function `map`.
 -- It applies a function to every element in a list.
 myMap :: (a -> b) -> [a] -> [b]
-myMap = todo
+myMap _ [] = []
+myMap f (a:l) = [f a] ++ map f l
 
 myMapSpec :: Spec
 myMapSpec =
@@ -222,7 +239,8 @@ myMapSpec =
 -- Implement your own version of the function `filter`.
 -- It keeps only the elements which satisfy the predicate.
 myFilter :: (a -> Bool) -> [a] -> [a]
-myFilter = todo
+myFilter _ [] = []
+myFilter f (a:l) = if f a then [a] ++ myFilter f l else myFilter f l
 
 myFilterSpec :: Spec
 myFilterSpec =
@@ -233,7 +251,7 @@ myFilterSpec =
 -- Implement the function `squares`. It squares every element in a list.
 -- Make use of the predefined function `map`:
 squares :: [Int] -> [Int]
-squares = todo
+squares l = map (\i -> i*i) l
 
 squaresSpec :: Spec
 squaresSpec =
@@ -244,7 +262,7 @@ squaresSpec =
 -- Implement the function `names`. It extracts the names of the languages.
 -- Make use of the predefined function `map`:
 names :: [Language] -> [String]
-names = todo
+names l = map name l
 
 namesSpec :: Spec
 namesSpec =
@@ -255,7 +273,7 @@ namesSpec =
 -- Implement the function `evens`. It keeps only the even values of a list.
 -- Use the function `filter` and the `even` function:
 evens :: [Int] -> [Int]
-evens = todo
+evens l = filter even l
 
 evensSpec :: Spec
 evensSpec =
@@ -266,7 +284,7 @@ evensSpec =
 -- Implement the function `likes`. It keeps only the functional languages:
 -- Use the function `filter` and write the predicate as a lambda expression:
 likes :: [Language] -> [Language]
-likes = todo
+likes l = filter (\n -> paradigm n==Functional) l
 
 likesSpec :: Spec
 likesSpec =
@@ -278,7 +296,7 @@ likesSpec =
 -- Implement the function `foldrLength`. It computes the lengths of a list.
 -- Use the function `foldr`:
 foldrLength :: [a] -> Int
-foldrLength = todo
+foldrLength l = foldr (\_ c -> c + 1) 0 l
 
 foldrLengthSpec :: Spec
 foldrLengthSpec =
@@ -288,7 +306,7 @@ foldrLengthSpec =
 -- Implement the function `foldrMap`. It has the same behavior like `map`.
 -- Use the function `foldr`:
 foldrMap :: (a -> b) -> [a] -> [b]
-foldrMap = todo
+foldrMap f l = foldr ((:) . f) [] l
 
 foldrMapSpec :: Spec
 foldrMapSpec =
@@ -312,12 +330,13 @@ foldrMapSpec =
 -- 2. The operator needs to be surrounded by parenthesis in the type signature:
 -- Example: (<+>) :: Int -> Int -> Int
 
--- (|>) TODO
+(|>) :: (a -> b) -> (b -> c) -> (a -> c)
+(f |> g) x = g (f x)
 
 -- Implement the function `flip'`.
 -- It takes a function and flips its first two arguments.
 flip' :: (a -> b -> c) -> (b -> a -> c)
-flip' = todo
+flip' f a b = f b a
 
 flip'Spec :: Spec
 flip'Spec =
@@ -327,7 +346,7 @@ flip'Spec =
 -- Implement the function `curry'`.
 -- It converts a function which takes a pair to a function which takes the arguments one after another.
 curry' :: ((a, b) -> c) -> (a -> b -> c)
-curry' = todo
+curry' f a b = f (a,b)
 
 curry'Spec :: Spec
 curry'Spec =
@@ -337,7 +356,7 @@ curry'Spec =
 -- Implement the function `uncurry' :: (a -> b -> c) -> ((a,b) -> c)`.
 -- It is the inverse of `curry'`: `curry' . uncurry' == id`:
 uncurry' :: (a -> b -> c) -> ((a, b) -> c)
-uncurry' = todo
+uncurry' f (a,b) = f a b
 
 uncurry'Spec :: Spec
 uncurry'Spec =
